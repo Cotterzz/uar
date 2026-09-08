@@ -125,7 +125,7 @@ const newGame=()=>({state:0,hp:3,maxHp:3,menu:0,pause:0,time:0,next:P.spawn,xp:0
 let game=newGame();
 const up=i=>game.up[i];
 // Upgrades: [name, icon, color, max level, badge kind (1 +20%/lv, 2 Lv n, 3 +2n), requires index]. 0 hp 1 warp 2 double 3 triple 4 lowgrav 5 magnet 6 second wind 7 sticky 8 reach 9 jump 10 thick 11 flat 12 fast
-const POOL=[['+1 HP','♥','#ff4d6d',99],['Warp','↻','#5a5cff',1],['x2 Rainbow','◠◠','#c45cff',1],['x3 Rainbow','◠◠◠','#ff9a2e',1,0,2],['Low Grav','½g','#9fd8ff',1],['XP Magnet','⤴','#ffe94a',1],['Second Wind','♡','#ff9ac9',1],['More rainbows','+◠','#ffb347',3,3],['Longer Rainbow','⟷','#3fb8ff',5,1],['Higher Jump','⤒','#5ee66a',5,1],['Thicker Rainbow','≡','#ff3b5c',4,2],['Flatter Rainbow','(','#5ee6d0',5,2],['Quick Cast','⚡','#ffd34d',5,2],['Damage','✦','#fff7a0',2,4]];
+const POOL=[['+1 HP','♥','#ff4d6d',99],['Warp','↻','#5a5cff',1],['x2 Rainbow','◠◠','#c45cff',1],['x3 Rainbow','◠◠◠','#ff9a2e',1,0,2],['Low Grav','½g','#9fd8ff',1],['XP Magnet','⤴','#ffe94a',3,2],['Second Wind','♡','#ff9ac9',1],['More rainbows','+◠','#ffb347',3,3],['Longer Rainbow','⟷','#3fb8ff',5,1],['Higher Jump','⤒','#5ee66a',5,1],['Thicker Rainbow','≡','#ff3b5c',4,2],['Flatter Rainbow','(','#5ee6d0',5,2],['Quick Cast','⚡','#ffd34d',5,2],['Damage','✦','#fff7a0',2,4]];
 const badge=(t,l)=>t==1?'+'+l*20+'%':t==2?'Lv '+l:t==4?'x'+(l+1):'+'+l*2;
 const jumpVel=()=>P.jump*sqrt(1+up(9)*.2),reach=()=>P.len*(1+up(8)*.2),gravity=()=>P.grav*(up(4)?.5:1),bulge=()=>max(.1,P.bulge-up(11)*.04),growTime=()=>max(.08,P.grow-up(12)*.08),bandW=()=>2.6*(1+up(10)*.35),maxR=()=>P.maxR+up(7)*2;
 // Baddie types: e emoji, r radius, f font px, s speed range, c colour, at unlock time, w roll weight; behaviours drift/chase(radius)/dash/phase/split/boss/eats/storm
@@ -152,7 +152,7 @@ const liveRbs=()=>rbs.filter(r=>r.st<2);
 function addRb(r){rbs.push(r);let l=liveRbs();while(l.length>maxR()){l[0].st=2;S.pop();l=liveRbs()}}
 const onArc=(a,ang)=>{const d=wrap(ang-a.a0),s=a.sweep*a.prog;return s>=0?d>=-.01&&d<=s+.01:d<=.01&&d>=s-.01};
 function surf(p,x){if(p.r==null)return x>=p.x&&x<=p.x+p.w?p.y:null;const dx=x-p.cx;if(abs(dx)>p.r)return null;const y=p.cy-sqrt(p.r*p.r-dx*dx);return onArc(p,atan2(y-p.cy,dx))?y:null}
-function highest(x,y0,y1){let best=null;const chk=p=>{for(const o of[-11,0,11]){const y=surf(p,x+o);if(y!=null&&y>=y0&&y<=y1&&(!best||y<best.y))best={y,p}}};clouds.forEach(chk);for(const r of rbs)if(r.st<2)chk(r);return best}
+function highest(x,y0,y1){let best=null;const chk=p=>{for(const o of[-11,0,11]){const y=surf(p,x+o);if(y!=null&&y>=y0&&y<=y1&&(!best||y<best.y))best={y,p}}};clouds.forEach(chk);for(const r of rbs)if(r.st<2){chk(r);if(r.pad)chk(r.pad)}return best}
 function updRbs(dt){for(let i=rbs.length-1;i>=0;i--){const r=rbs[i];r.t+=dt;
   if(!r.st){r.prog=min(1,r.t/r.grow);if(r.prog>=1){r.st=1;sparkle(r.x1,r.y1);if(r.gen==0&&up(2)||r.gen==1&&up(3)){addRb(mkRb(r.x1,r.y1,r.x1+r.dx,r.y1+r.dy,r.facing,r.gen+1));S.rainbow()}}}
   else if(r.st==2){r.alpha-=dt/P.fade;if(r.alpha<=0)rbs.splice(i,1)}}}
@@ -229,7 +229,7 @@ function updBaddies(dt){const p=player;for(const b of baddies){if(!b.alive){b.di
 
 // XP orbs / hearts + level-up menu
 function updPups(dt){const p=player,g=game;for(let i=pups.length-1;i>=0;i--){const u=pups[i];u.t+=dt;const mx=p.x-u.x,my=p.y-22-u.y,md=hypot(mx,my);
-  if(up(5)&&md<280&&p.dead<=0){const s=260*dt;u.x+=mx/md*s;u.y+=my/md*s}else{u.y-=42*dt;u.x+=sin(u.t*2)*30*dt}
+  if(md<80+up(5)*90&&p.dead<=0){const s=260*dt;u.x+=mx/md*s;u.y+=my/md*s}else{u.y-=42*dt;u.x+=sin(u.t*2)*30*dt}
   if(random()<dt*12)burst(u.x,u.y+8,1,{sp:20,life:.6,size:2,cols:RC,vy:30});
   if(u.y<cam.y-24||u.y<W.top){pups.splice(i,1);continue}
   if(g.state||p.dead>0)continue;const qx=clamp(u.x,p.x-18,p.x+18),qy=clamp(u.y,p.y-44,p.y);if(hypot(u.x-qx,u.y-qy)>=u.r)continue;
@@ -257,7 +257,7 @@ const player={x:200,y:720,vx:0,vy:0,facing:1,gnd:0,coy:0,jb:0,jmp:0,fcd:0,sq:0,s
 let flash=0,flashC='255,255,255',time=0,shake=0,tint=0;
 function aimTarget(){const p=player;if(inputMode==1&&mouse.over)return{x:mouse.x+cam.x,y:mouse.y+cam.y};if(inputMode==2&&pad.aim)return{x:p.x+pad.aim.x*1000,y:p.y+pad.aim.y*1000};const dn=keys.has('d');return{x:p.x+p.facing*(dn?260:240),y:p.y+(dn?70:-50)}}
 function aimVec(){const p=player,t=aimTarget(),dx=t.x-p.x,dy=t.y-p.y,L=hypot(dx,dy);if(L<1)return null;const l=clamp(L,50,reach());return{dx:dx*l/L,dy:dy*l/L}}
-function fire(){const p=player;if(p.fcd>0||p.dead>0||game.state||game.menu)return;const v=aimVec();if(!v)return;if(abs(v.dx)>.5)p.facing=sign(v.dx);addRb(mkRb(p.x,p.y,p.x+v.dx,p.y+v.dy,p.facing));p.fcd=P.cd;S.rainbow();sparkle(p.x,p.y)}
+function fire(){const p=player;if(p.fcd>0||p.dead>0||game.state||game.menu)return;const v=aimVec();if(!v)return;if(abs(v.dx)>.5)p.facing=sign(v.dx);const r=mkRb(p.x,p.y,p.x+v.dx,p.y+v.dy,p.facing);r.pad={x:p.x-32,y:p.y,w:64,h:20};addRb(r);p.fcd=P.cd;S.rainbow();burst(p.x,p.y,16,{sp:150,life:.6,size:3,g:120})}
 function respawn(){const p=player;p.x=p.sx;p.y=p.sy;p.vx=p.vy=0;p.gnd=0;p.dead=0;p.inv=1;rbs.length=0;flash=1;flashC='255,255,255';cam.x=clamp(p.x-VW/2,0,W.w-VW);cam.y=clamp(p.y-VH*.6,W.top,W.bot-VH)}
 function reset(){game=newGame();mEl.classList.remove('show');pups.length=baddies.length=spawns.length=parts.length=bolts.length=0;shake=tint=0;player.sx=200;player.sy=720;respawn();player.inv=0}
 const ckpt=p=>{p.sx=p.x;p.sy=p.y};
@@ -270,8 +270,8 @@ function updPlayer(dt){const p=player;if(game.state)return;if(p.dead>0){p.dead-=
   if(p.jmp&&!keys.has('j')&&p.vy<0){p.vy*=P.cut;p.jmp=0}if(p.vy>=0)p.jmp=0;
   if(!p.gnd)p.vy=min(P.maxFall,p.vy+gravity()*(p.vy>0?P.fallMul:1)*dt);
   const py=p.y;let nx=p.x+p.vx*dt;const cx=clamp(nx,18,W.w-18);if(cx!=nx){nx=cx;p.vx=0}
-  if(p.gnd){const s=highest(nx,p.y-P.stepUp,p.y+P.stepDown);if(s){p.x=nx;p.y=s.y;p.vy=0;if(s.p.r==null)ckpt(p)}else if(highest(nx,p.y-44,p.y-P.stepUp))p.vx=0;else{p.x=nx;p.gnd=0}}
-  else{p.x=nx;const ny=p.y+p.vy*dt;let s;if(p.vy>0&&(s=highest(p.x,py-max(6,abs(p.vx*dt)*2),ny))){p.y=s.y;p.gnd=1;p.sq=clamp(p.vy/3000,.08,.3);S.land(p.vy);burst(p.x,p.y,8,{sp:90,life:.4,size:3,col:'#fffd',ys:.3,vy:-20});p.vy=0;if(s.p.r==null)ckpt(p)}else p.y=ny}
+  if(p.gnd){const s=highest(nx,p.y-P.stepUp,p.y+P.stepDown);if(s){p.x=nx;p.y=s.y;p.vy=0;if(clouds.includes(s.p))ckpt(p)}else if(highest(nx,p.y-44,p.y-P.stepUp))p.vx=0;else{p.x=nx;p.gnd=0}}
+  else{p.x=nx;const ny=p.y+p.vy*dt;let s;if(p.vy>0&&(s=highest(p.x,py-max(6,abs(p.vx*dt)*2),ny))){p.y=s.y;p.gnd=1;p.sq=clamp(p.vy/3000,.08,.3);S.land(p.vy);burst(p.x,p.y,8,{sp:90,life:.4,size:3,col:'#fffd',ys:.3,vy:-20});p.vy=0;if(clouds.includes(s.p))ckpt(p)}else p.y=ny}
   if(p.y>W.bot+60){if(up(1)){p.y=cam.y-20;p.vy=min(p.vy,150);S.warp();burst(p.x,p.y,16,{sp:120,life:.6,size:3,col:'#9fd8ff'})}
     else{p.dead=.6;S.fall();if(loseHp()&&p.dead<=0)p.dead=.6}}}
 function updCam(dt){const k=1-exp(-6*dt);cam.x+=(clamp(player.x-VW/2,0,W.w-VW)-cam.x)*k;cam.y+=(clamp(player.y-VH*.6,W.top,W.bot-VH)-cam.y)*k}
@@ -330,7 +330,7 @@ function render(){X.setTransform(DPR,0,0,DPR,0,0);const sky=X.createLinearGradie
   if(tint>0){X.fillStyle=`rgba(40,10,70,${tint*.35})`;X.fillRect(0,0,VW,VH)}
   X.save();X.translate(-cam.x+(random()-.5)*shake,-cam.y+(random()-.5)*shake);
   const l=liveRbs(),old=l.length>=maxR()?l[0]:null;for(const r of rbs)drawRb(r,r==old);drawAim();bolts.forEach(drawBolt);spawns.forEach(drawSpawn);baddies.forEach(drawB);pups.forEach(drawPup);
-  for(const q of parts){X.globalAlpha=1-q.life/q.max;if(q.star){X.fillStyle=q.col;star(q.x,q.y,q.size,q.rot+q.life*q.spin)}else circ(q.x,q.y,q.size,q.col)}X.globalAlpha=1;drawUni(player);clouds.forEach(drawCloud);X.restore();
+  for(const q of parts){X.globalAlpha=1-q.life/q.max;if(q.star){X.fillStyle=q.col;star(q.x,q.y,q.size,q.rot+q.life*q.spin)}else circ(q.x,q.y,q.size,q.col)}X.globalAlpha=1;drawUni(player);clouds.forEach(drawCloud);for(const r of rbs)if(r.pad){X.globalAlpha=r.alpha;drawCloud(r.pad)}X.globalAlpha=1;X.restore();
   drawCombo();if(flash>0){X.fillStyle=`rgba(${flashC},${flash})`;X.fillRect(0,0,VW,VH)}drawBoss();drawOverlay()}
 
 // HUD + main loop
