@@ -8,8 +8,9 @@ canvas{display:block;width:100vw;height:100vh;cursor:crosshair}
 #xp{width:150px;height:12px;border-radius:6px;background:#0b1020aa;border:1px solid #fff8;margin:10px 0;overflow:hidden;position:relative;text-align:center;font-size:9px;font-weight:700;line-height:12px}
 #xp i{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#3fb8ff,#c45cff)}
 #xp b{position:relative}
-.u{position:relative;width:46px;height:46px;border-radius:50%;border:2px solid var(--c);background:#0b1020aa;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--c);margin-bottom:8px}
-.u b{position:absolute;right:-6px;bottom:-4px;background:var(--c);color:#0b1020;font-size:11px;border-radius:9px;padding:1px 5px}
+#ups{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none}
+.u{position:relative;width:32px;height:32px;border-radius:50%;border:2px solid var(--c);background:#0b1020aa;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--c)}
+.u b{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;background:var(--c);color:#0b1020;font-size:10px;border-radius:8px;padding:0 4px;white-space:nowrap}
 #ib{position:fixed;right:16px;bottom:16px;width:40px;height:40px;border-radius:50%;border:2px solid #fffb;background:#0b1020aa;color:#fff;font:italic 700 20px serif}
 #in{position:fixed;right:16px;bottom:66px;width:min(400px,90vw);max-height:80vh;overflow:auto;background:#0b1020ee;padding:6px 16px 14px;border-radius:10px;line-height:1.5;display:none}
 #in h4{margin:8px 0 2px;color:#9fd8ff}
@@ -23,25 +24,23 @@ kbd{background:#fff2;border-radius:4px;padding:0 5px}
 .c.s{outline:3px solid #fff;background:#fff3}
 .c i{font-size:34px;line-height:1;color:var(--c);font-style:normal}
 .c b{font-size:15px}
-#rr{margin-top:16px;padding:7px 18px;border-radius:20px;border:1px solid #fff8;background:#fff1;color:#fff;font:inherit}
-#rr:disabled{opacity:.35}
 #m.show{display:flex}#in.show{display:block}
 </style></head><body>
 <canvas id=c></canvas>
-<div id=h><div id=hp></div><div id=xp><i id=xf></i><b id=xt></b></div><div id=ups></div></div>
+<div id=h><div id=hp></div><div id=xp><i id=xf></i><b id=xt></b></div></div><div id=ups></div>
 <button id=ib>i</button>
 <div id=in><h4>Keyboard &amp; mouse</h4><table>
 <tr><td>Move</td><td><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd></td></tr>
 <tr><td>Jump</td><td><kbd>Space</kbd> <kbd>W</kbd> <kbd>↑</kbd> — hold for height</td></tr>
 <tr><td>Rainbow</td><td><kbd>Click</kbd> to aim &amp; cast, or <kbd>X</kbd> / <kbd>Shift</kbd> forward (<kbd>↓</kbd> low)</td></tr>
-<tr><td>Menu</td><td><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> or <kbd>←</kbd><kbd>→</kbd><kbd>Enter</kbd> · <kbd>R</kbd> reroll</td></tr>
+<tr><td>Menu</td><td><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> or <kbd>←</kbd><kbd>→</kbd><kbd>Enter</kbd></td></tr>
 <tr><td>Other</td><td><kbd>Esc</kbd> pause · <kbd>I</kbd> help · <kbd>M</kbd> mute · <kbd>R</kbd> restart</td></tr></table>
 <h4>Gamepad</h4><table>
 <tr><td>Sticks</td><td>Left move · right aim</td></tr>
 <tr><td>LB / A · RB</td><td>Jump · cast</td></tr>
-<tr><td>Menu</td><td>D-pad · A pick · Y reroll</td></tr>
+<tr><td>Menu</td><td>D-pad · A pick</td></tr>
 <tr><td>Start</td><td>Pause</td></tr></table></div>
-<div id=m><div><h2>Level up!</h2><div id=cs></div><button id=rr></button></div></div>
+<div id=m><div><h2>Level up!</h2><div id=cs></div></div></div>
 <script>
 'use strict';
 const {sin,cos,abs,min,max,hypot,floor,ceil,round,sign,random,sqrt,atan2,pow,exp,PI}=Math,TAU=PI*2;
@@ -63,7 +62,7 @@ const KEYMAP={'arrowleft':'l','a':'l','arrowright':'r','d':'r','arrowdown':'d','
 const over=()=>game.state>1.5&&(reset(),1);   // game over for >0.5s: any input restarts
 on(window,'keydown',e=>{
   if(over())return;
-  if(game.menu){const n=+e.key;if(n>=1&&n<=3)choose(n-1);else if(e.key=='ArrowLeft')menuMove(-1);else if(e.key=='ArrowRight')menuMove(1);else if(e.key=='Enter'||e.key==' ')choose(sel);else if(e.key=='r'||e.key=='R')reroll();e.preventDefault();return}
+  if(game.menu){const n=+e.key;if(n>=1&&n<=3)choose(n-1);else if(e.key=='ArrowLeft')menuMove(-1);else if(e.key=='ArrowRight')menuMove(1);else if(e.key=='Enter'||e.key==' ')choose(sel);e.preventDefault();return}
   const k=KEYMAP[e.key.toLowerCase()];if(!k)return;e.preventDefault();if(!keys.has(k))pressed.add(k);keys.add(k);if(k=='f')inputMode=0;unlock()});
 on(window,'keyup',e=>keys.delete(KEYMAP[e.key.toLowerCase()]));
 on(window,'blur',()=>keys.clear());
@@ -81,7 +80,7 @@ function pollPad(){
   if(pad.move||pad.aim)inputMode=2;
   gp.buttons.forEach((bt,i)=>{const down=bt.pressed||bt.value>.5,was=pad.prev[i];pad.prev[i]=down;
     if(!down){if(was&&PAD[i])keys.delete(PAD[i]);return}if(was||over())return;unlock();
-    if(game.menu){if(i==14)menuMove(-1);else if(i==15)menuMove(1);else if(i==0||i==5||i==7)choose(sel);else if(i==3)reroll();return}
+    if(game.menu){if(i==14)menuMove(-1);else if(i==15)menuMove(1);else if(i==0||i==5||i==7)choose(sel);return}
     const k=PAD[i];if(k){pressed.add(k);keys.add(k);inputMode=2}})}
 
 // Audio: AudioWorklet synth from an inline Blob. Voice = [type(0 sine,1 tri,2 square,3 noise), f0, f1, dur, gain, attack, delay, noiseCut, curve]
@@ -121,13 +120,14 @@ const S={
 const W={w:3500,top:-500,bot:1150};
 const clouds=[[40,720,520,80],[800,660,220,60],[1180,540,150,52],[1500,380,220,60],[1900,700,260,64],[2450,520,150,52],[2760,300,120,46],[2980,440,400,70]].map(([x,y,w,h])=>({x,y,w,h}));
 // state: 0 play, 1 game over. up[]: levels per POOL index
-const newGame=()=>({state:0,hp:3,maxHp:3,menu:0,pause:0,time:0,next:P.spawn,xp:0,need:3,level:0,wave:0,rerolls:0,combo:0,comboT:0,bossPending:0,boss:null,bossN:0,swUsed:0,up:Array(14).fill(0)});
+const newGame=()=>({state:0,hp:3,maxHp:3,menu:0,pause:0,time:0,next:P.spawn,xp:0,need:3,level:0,wave:0,combo:0,comboT:0,bossPending:0,boss:null,bossN:0,swUsed:0,up:Array(16).fill(0)});
 let game=newGame();
 const up=i=>game.up[i];
 // Upgrades: [name, icon, color, max level, badge kind (1 +20%/lv, 2 Lv n, 3 +2n), requires index]. 0 hp 1 warp 2 double 3 triple 4 lowgrav 5 magnet 6 second wind 7 sticky 8 reach 9 jump 10 thick 11 flat 12 fast
-const POOL=[['+1 HP','♥','#ff4d6d',99],['Warp','↻','#5a5cff',1],['x2 Rainbow','◠◠','#c45cff',1],['x3 Rainbow','◠◠◠','#ff9a2e',1,0,2],['Low Grav','½g','#9fd8ff',1],['XP Magnet','⤴','#ffe94a',3,2],['Second Wind','♡','#ff9ac9',1],['More rainbows','+◠','#ffb347',3,3],['Longer Rainbow','⟷','#3fb8ff',5,1],['Higher Jump','⤒','#5ee66a',5,1],['Thicker Rainbow','≡','#ff3b5c',4,2],['Flatter Rainbow','(','#5ee6d0',5,2],['Quick Cast','⚡','#ffd34d',5,2],['Damage','✦','#fff7a0',2,4]];
-const badge=(t,l)=>t==1?'+'+l*20+'%':t==2?'Lv '+l:t==4?'x'+(l+1):'+'+l*2;
-const jumpVel=()=>P.jump*sqrt(1+up(9)*.2),reach=()=>P.len*(1+up(8)*.2),gravity=()=>P.grav*(up(4)?.5:1),bulge=()=>max(.1,P.bulge-up(11)*.04),growTime=()=>max(.08,P.grow-up(12)*.08),bandW=()=>2.6*(1+up(10)*.35),maxR=()=>P.maxR+up(7)*2;
+const POOL=[['+1 HP','♥','#ff4d6d',99],['Warp','↻','#5a5cff',1],['x2 Rainbow','◠◠','#c45cff',1],['x3 Rainbow','◠◠◠','#ff9a2e',1,0,2],['Low Grav','½g','#9fd8ff',1],['XP Magnet','⤴','#ffe94a',3,2],['Second Wind','♡','#ff9ac9',1],['More rainbows','+◠','#ffb347',3,3],['Longer Rainbow','⟷','#3fb8ff',5,1],['Higher Jump','⤒','#5ee66a',5,1],['Thicker Rainbow','≡','#ff3b5c',4,2],['Flatter Rainbow','(','#5ee6d0',5,2],['Quick Cast','⚡','#ffd34d',5,2],['Damage','✦','#fff7a0',2,4],['Cast Rate','↯','#9fd8ff',3,2],['Wider Aim','∠','#5ee6d0',3,5]];
+const badge=(t,l)=>t==1?'+'+l*20+'%':t==2?'Lv '+l:t==4?'x'+(l+1):t==5?[90,120,180][l-1]+'°':'+'+l*2;
+// reach shrinks with x2/x3 so the chained arcs don't cover too much
+const jumpVel=()=>P.jump*sqrt(1+up(9)*.2),reach=()=>P.len*(1+up(8)*.2)*(up(3)?.6:up(2)?.75:1),gravity=()=>P.grav*(up(4)?.5:1),bulge=()=>max(.1,P.bulge-up(11)*.04),growTime=()=>max(.08,P.grow-up(12)*.08),bandW=()=>2.6*(1+up(10)*.35),maxR=()=>P.maxR+up(7)*2;
 // Baddie types: e emoji, r radius, f font px, s speed range, c colour, at unlock time, w roll weight; behaviours drift/chase(radius)/dash/phase/split/boss/eats/storm
 const T=[
   {e:'😈',r:15,f:30,s:128,hp:1,xp:1,c:'#c45cff',drift:1,at:0,w:3},
@@ -173,7 +173,7 @@ function killB(b){const c=T[b.type],g=game;b.alive=0;b.die=.5;g.combo=g.comboT>0
   const bonus=g.combo>=8?3:g.combo>=5?2:g.combo>=3?1:0;S.zap(min(g.combo,10));burst(b.x,b.y,22,{sp:180,life:.7,size:3.5,cols:RC,g:250});
   for(let i=c.xp*(b.elite?3:1)+(c.xp?bonus:0);i>0;i--)orb(b.x,b.y);
   if(c.split)for(let i=0;i<2;i++){const m=spawnB(4,b.x+(i?18:-18),b.y,1);m.vx=(i?1:-1)*m.sp*.8;m.vy=-m.sp*.6;m.hcd=.7}
-  if(c.boss){g.boss=null;g.rerolls++;orb(b.x,b.y,1);shake=14;S.levelup();burst(b.x,b.y,60,{sp:300,life:1.2,size:4,cols:RC,g:200})}}
+  if(c.boss){g.boss=null;orb(b.x,b.y,1);shake=14;S.levelup();burst(b.x,b.y,60,{sp:300,life:1.2,size:4,cols:RC,g:200})}}
 function loseHp(){const g=game,p=player;g.hp--;if(g.hp>0)return 1;
   if(up(6)&&!g.swUsed){g.swUsed=1;g.hp=1;p.inv=2.5;p.dead=0;flash=.6;flashC='255,233,74';shake=12;S.levelup();burst(p.x,p.y-24,50,{sp:320,life:1,size:4,cols:RC});
     for(const b of baddies){const dx=b.x-p.x,dy=b.y-p.y,d=hypot(dx,dy)||1;if(d<420){b.stun=2;b.vx=dx/d*360;b.vy=dy/d*360}}return 1}
@@ -237,28 +237,29 @@ function updPups(dt){const p=player,g=game;for(let i=pups.length-1;i>=0;i--){con
   if(u.heart){g.hp=min(g.maxHp,g.hp+1);S.levelup();burst(u.x,u.y,20,{sp:160,life:.6,size:3.5,col:'#ff4d6d'});continue}
   S.pickup();g.xp++;burst(u.x,u.y,12,{sp:140,life:.5,size:3,cols:RC});
   if(g.xp>=g.need){g.xp-=g.need;g.need++;g.level++;S.levelup();if(g.level%10==0)g.bossPending=1;burst(p.x,p.y-24,30,{sp:200,life:.8,size:3.5,cols:RC});openMenu();break}}}
-const mEl=$('m'),csEl=$('cs'),rrEl=$('rr');let choices=[],sel=0;
+const mEl=$('m'),csEl=$('cs');let choices=[],sel=0;
 const avail=i=>game.up[i]<POOL[i][3]&&(POOL[i][5]==null||game.up[POOL[i][5]]);
 function deal(){sel=0;const pool=POOL.map((u,i)=>i).filter(avail);for(let i=pool.length-1;i>0;i--){const j=floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}choices=pool.slice(0,3);
-  csEl.innerHTML=choices.map((i,k)=>`<button class="c${k?'':' s'}" style="--c:${POOL[i][2]}"><i>${POOL[i][1]}</i><b>${POOL[i][0]}</b></button>`).join('');
-  rrEl.disabled=!game.rerolls;rrEl.textContent=game.rerolls?`Reroll (R) · ${game.rerolls} left`:'No rerolls — beat a boss'}
+  csEl.innerHTML=choices.map((i,k)=>`<button class="c${k?'':' s'}" style="--c:${POOL[i][2]}"><i>${POOL[i][1]}</i><b>${POOL[i][0]}</b></button>`).join('')}
 let lockT=0;   // selection is ignored for the first second so a stray click/fire can't pick a card
 function openMenu(){game.menu=1;game.pause=0;lockT=1;keys.clear();deal();mEl.classList.add('show')}
-function reroll(){if(game.menu&&game.rerolls>0){game.rerolls--;S.choose();deal()}}
 function menuMove(d){sel=(sel+d+3)%choices.length;[...csEl.children].forEach((c,i)=>c.classList.toggle('s',i==sel))}
 function choose(k){const i=choices[k];if(i==null||!game.menu||lockT>0)return;if(i)game.up[i]++;else{game.maxHp++;game.hp=min(game.maxHp,game.hp+1)}
   mEl.classList.remove('show');game.menu=0;acc=0;S.choose();burst(player.x,player.y-24,24,{sp:140,life:.7,size:3,col:POOL[i][2]});if(game.bossPending){game.bossPending=0;startBoss()}}
 on(csEl,'click',e=>{const c=e.target.closest('.c');if(c)choose([...csEl.children].indexOf(c))});
-on(rrEl,'click',reroll);
 function togglePause(){if(!game.state&&!game.menu){game.pause=!game.pause;keys.clear();acc=0;S.choose()}}
 
 // Player
 const player={x:200,y:720,vx:0,vy:0,facing:1,gnd:0,coy:0,jb:0,jmp:0,fcd:0,sq:0,sx:200,sy:720,dead:0,inv:0,roll:0},cam={x:0,y:0};
 let flash=0,flashC='255,255,255',time=0,shake=0,tint=0;
-function aimTarget(){const p=player;if(inputMode==1&&mouse.over)return{x:mouse.x+cam.x,y:mouse.y+cam.y};if(inputMode==2&&pad.aim)return{x:p.x+pad.aim.x*1000,y:p.y+pad.aim.y*1000};const dn=keys.has('d');return{x:p.x+p.facing*(dn?260:240),y:p.y+(dn?70:-50)}}
-function aimVec(){const p=player,t=aimTarget(),dx=t.x-p.x,dy=t.y-p.y,L=hypot(dx,dy);if(L<1)return null;const l=clamp(L,50,reach());return{dx:dx*l/L,dy:dy*l/L}}
-function fire(){const p=player;if(p.fcd>0||p.dead>0||game.state||game.menu)return;const v=aimVec();if(!v)return;if(abs(v.dx)>.5)p.facing=sign(v.dx);const r=mkRb(p.x,p.y,p.x+v.dx,p.y+v.dy,p.facing);r.pad={x:p.x-32,y:p.y,w:64,h:20};addRb(r);p.fcd=P.cd;S.rainbow();burst(p.x,p.y,16,{sp:150,life:.6,size:3,g:120})}
-function respawn(){const p=player;p.x=p.sx;p.y=p.sy;p.vx=p.vy=0;p.gnd=0;p.dead=0;p.inv=1;rbs.length=0;flash=1;flashC='255,255,255';cam.x=clamp(p.x-VW/2,0,W.w-VW);cam.y=clamp(p.y-VH*.6,W.top,W.bot-VH)}
+// stick deflection sets length: half reach at the deadzone edge, full reach at full tilt
+function aimTarget(){const p=player;if(inputMode==1&&mouse.over)return{x:mouse.x+cam.x,y:mouse.y+cam.y};if(inputMode==2&&pad.aim){const m=min(1,hypot(pad.aim.x,pad.aim.y)),L=reach()*(.5+.5*m)/m;return{x:p.x+pad.aim.x*L,y:p.y+pad.aim.y*L}}const dn=keys.has('d');return{x:p.x+p.facing*(dn?260:240),y:p.y+(dn?70:-50)}}
+// aim is clamped to a cone either side (±30° base, widened by Wider Aim) and to [half reach, reach]
+function aimVec(){const p=player,t=aimTarget(),dx=t.x-p.x,dy=t.y-p.y,L=hypot(dx,dy);if(L<1)return null;const lim=[PI/6,PI/4,PI/3,PI/2][up(15)],a=clamp(atan2(dy,abs(dx)),-lim,lim),sd=dx<0?-1:dx>0?1:p.facing,l=clamp(L,reach()/2,reach());return{dx:cos(a)*sd*l,dy:sin(a)*l}}
+// Cast Rate: the last cast must have grown this far before the next (Quick Cast shortens that wait)
+let lastRb=null;const canFire=()=>!lastRb||lastRb.st||lastRb.prog>=[1,.5,1/3,0][up(14)];
+function fire(){const p=player;if(p.fcd>0||!canFire()||p.dead>0||game.state||game.menu)return;const v=aimVec();if(!v)return;if(abs(v.dx)>.5)p.facing=sign(v.dx);const r=mkRb(p.x,p.y,p.x+v.dx,p.y+v.dy,p.facing);r.pad={x:p.x-32,y:p.y,w:64,h:20};addRb(r);lastRb=r;p.fcd=P.cd;S.rainbow();burst(p.x,p.y,16,{sp:150,life:.6,size:3,g:120})}
+function respawn(){const p=player;p.x=p.sx;p.y=p.sy;p.vx=p.vy=0;p.gnd=0;p.dead=0;p.inv=1;rbs.length=0;lastRb=null;flash=1;flashC='255,255,255';cam.x=clamp(p.x-VW/2,0,W.w-VW);cam.y=clamp(p.y-VH*.6,W.top,W.bot-VH)}
 function reset(){game=newGame();mEl.classList.remove('show');pups.length=baddies.length=spawns.length=parts.length=bolts.length=0;shake=tint=0;player.sx=200;player.sy=720;respawn();player.inv=0}
 const ckpt=p=>{p.sx=p.x;p.sy=p.y};
 function updPlayer(dt){const p=player;if(game.state)return;if(p.dead>0){p.dead-=dt;if(p.dead<=0)respawn();return}
@@ -290,11 +291,11 @@ function strokeArc(a,rad,w,st,end,al){X.beginPath();X.arc(a.cx,a.cy,rad,a.a0,end
 function drawRb(a,oldest){const B=a.band;if(a.r<=B*7)return;const end=a.a0+a.sweep*a.prog;let al=a.alpha;if(oldest&&a.st<2)al*=.7+.3*sin(time*10);X.save();X.lineCap='butt';
   strokeArc(a,a.r-B*3.5,B*7+10,'#fff4',end,al);for(let i=0;i<7;i++)strokeArc(a,a.r-B*i-B/2,B+.7,RC[i],end,al);if(up(13))strokeArc(a,a.r-B*3,B*2+1,'#fff',end,al*.3*up(13));strokeArc(a,a.r-.7,1.2,'#fffb',end,al);X.restore()}
 function drawAim(){const p=player;if(p.dead>0||game.state||inputMode==1&&!mouse.over)return;const v=aimVec();if(!v)return;const a=arcGeom(p.x,p.y,p.x+v.dx,p.y+v.dy,abs(v.dx)>.5?sign(v.dx):p.facing);
-  X.save();X.setLineDash([6,8]);X.lineDashOffset=-time*40;X.beginPath();X.arc(a.cx,a.cy,a.r,a.a0,a.a0+a.sweep,a.sweep<0);X.lineWidth=2;X.strokeStyle='#fff8';X.stroke();X.setLineDash([]);circ(p.x+v.dx,p.y+v.dy,4,'#fffb');X.restore()}
+  X.save();X.setLineDash([6,8]);X.lineDashOffset=-time*40;X.beginPath();X.arc(a.cx,a.cy,a.r,a.a0,a.a0+a.sweep,a.sweep<0);X.lineWidth=2;X.strokeStyle=canFire()?'#fff8':'#fff3';X.stroke();X.setLineDash([]);circ(p.x+v.dx,p.y+v.dy,4,'#fffb');X.restore()}
 function drawUni(p){if(p.dead>0)return;X.save();X.translate(p.x,p.y);X.scale(p.facing*(1+p.sq),1-p.sq);if(p.inv>0&&floor(p.inv*16)%2)X.globalAlpha=.35;
-  const g=X.createRadialGradient(-7,-28,3,0,-20,22);g.addColorStop(0,'#d9a6ff');g.addColorStop(.55,'#9b4fe0');g.addColorStop(1,'#4e1d85');circ(0,-20,20,g);
+  const g=X.createRadialGradient(-7,-28,3,0,-20,22);g.addColorStop(0,'#fff');g.addColorStop(.55,'#cfe9ff');g.addColorStop(1,'#8dbfe8');circ(0,-20,20,g);
   // rolling spokes (facing flip reverses rotation, so counter it), static highlight on top
-  X.save();X.translate(0,-20);X.rotate(p.roll*p.facing);X.beginPath();for(let i=0;i<3;i++){const a=i*PI/3;X.moveTo(cos(a)*19,sin(a)*19);X.lineTo(-cos(a)*19,-sin(a)*19)}X.lineWidth=5;X.strokeStyle='#2a0b4a99';X.stroke();X.restore();
+  X.save();X.translate(0,-20);X.rotate(p.roll*p.facing);X.beginPath();for(let i=0;i<3;i++){const a=i*PI/3;X.moveTo(cos(a)*19,sin(a)*19);X.lineTo(-cos(a)*19,-sin(a)*19)}X.lineWidth=5;X.strokeStyle='#2a6db8aa';X.stroke();X.restore();
   X.fillStyle='#fff6';X.beginPath();X.ellipse(-8,-30,6,3.5,-.6,0,TAU);X.fill();
   // head: rocks, bobs harder when moving, and lags on vertical velocity like suspension
   const mv=abs(p.vx)>20;X.translate(11,-43+sin(time*(mv?14:3))*(mv?3:1)+clamp(-p.vy/150,-4,4));X.rotate(sin(time*(mv?14:3))*(mv?.12:.06));X.scale(-1,1);txt('🦄',0,0,36+F,'#fff');X.restore()}
@@ -318,7 +319,7 @@ function drawSpawn(s){const k=s.t/(s.dur||1.4),col=s.elite?'#ffd34d':T[s.type].c
 function star(x,y,r,t){X.save();X.translate(x,y);X.rotate(t);X.beginPath();for(let i=0;i<10;i++){const a=i*PI/5-PI/2,q=i%2?r*.45:r;X.lineTo(cos(a)*q,sin(a)*q)}X.closePath();X.fill();X.restore()}
 function drawPup(u){X.save();X.translate(u.x,u.y);const pl=1+sin(u.t*6)*.1;
   if(u.heart)txt('♥',0,2,30*pl+F,'#ff4d6d');else{X.lineWidth=1.7;X.globalAlpha=.85;for(let i=0;i<7;i++){X.beginPath();X.arc(0,0,(16-i*1.5)*pl,0,TAU);X.strokeStyle=RC[i];X.stroke()}X.globalAlpha=1;X.fillStyle='#fff';star(0,0,7*pl,u.t*2)}X.restore()}
-function drawBoss(){const b=game.boss;if(!b||!b.alive)return;const c=T[b.type],w=min(360,VW-80),x=(VW-w)/2,y=78;
+function drawBoss(){const b=game.boss;if(!b||!b.alive)return;const c=T[b.type],w=min(360,VW-80),x=(VW-w)/2,y=96;
   txt(c.n,VW/2,y-12,'bold 15'+F,'#fff');rrect(x,y,w,12,6,'#0007');if(b.hp>0)rrect(x+2,y+2,(w-4)*b.hp/b.maxHp,8,4,c.storm&&b.mode!=2?'#9fb4ff':c.c);
   if(c.storm)txt(b.mode==2?'HIT IT!':`shielded · ${ceil(b.timer)}s`,VW/2,y+22,'12'+F,'#fffd')}
 function drawCombo(){const g=game;if(g.combo<2||g.comboT<=0)return;const p=player,k=min(1,g.comboT/.5),s='×'+g.combo,x=p.x-cam.x,y=p.y-78-cam.y-(1-k)*10;X.save();X.globalAlpha=k;
