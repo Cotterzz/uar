@@ -8,11 +8,13 @@ canvas{display:block;width:100vw;height:100vh;cursor:crosshair}
 #xp{width:150px;height:12px;border-radius:6px;background:#0b1020aa;border:1px solid #fff8;margin:10px 0;overflow:hidden;position:relative;text-align:center;font-size:9px;font-weight:700;line-height:12px}
 #xp i{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#3fb8ff,#c45cff)}
 #xp b{position:relative}
+small{font-size:.6em}
 #ups{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none}
-.u{position:relative;width:32px;height:32px;border-radius:50%;border:2px solid var(--c);background:#0b1020aa;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--c)}
+.u{position:relative;width:32px;height:32px;border-radius:8px;border:2px solid var(--c);background:#0b1020aa;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--c)}
 .u b{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;background:var(--c);color:#0b1020;font-size:10px;border-radius:8px;padding:0 4px;white-space:nowrap}
-#ib{position:fixed;right:16px;bottom:16px;width:40px;height:40px;border-radius:50%;border:2px solid #fffb;background:#0b1020aa;color:#fff;font:italic 700 20px serif}
-#in{position:fixed;right:16px;bottom:66px;width:min(400px,90vw);max-height:80vh;overflow:auto;background:#0b1020ee;padding:6px 16px 14px;border-radius:10px;line-height:1.5;display:none}
+#ib,#mb{position:fixed;right:16px;top:10px;width:40px;height:40px;border-radius:50%;border:2px solid #fffb;background:#0b1020aa;color:#fff;font:italic 700 20px serif}
+#mb{right:64px;font-style:normal}
+#in{position:fixed;right:16px;top:60px;width:min(400px,90vw);max-height:80vh;overflow:auto;background:#0b1020ee;padding:6px 16px 14px;border-radius:10px;line-height:1.5;display:none}
 #in h4{margin:8px 0 2px;color:#9fd8ff}
 #in td:first-child{color:#ffe94a;padding-right:8px;white-space:nowrap}
 kbd{background:#fff2;border-radius:4px;padding:0 5px}
@@ -28,7 +30,7 @@ kbd{background:#fff2;border-radius:4px;padding:0 5px}
 </style></head><body>
 <canvas id=c></canvas>
 <div id=h><div id=hp></div><div id=xp><i id=xf></i><b id=xt></b></div></div><div id=ups></div>
-<button id=ib>i</button>
+<button id=ib>i</button><button id=mb>♪</button>
 <div id=in><h4>Keyboard &amp; mouse</h4><table>
 <tr><td>Move</td><td><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd></td></tr>
 <tr><td>Jump</td><td><kbd>Space</kbd> <kbd>W</kbd> <kbd>↑</kbd> — hold for height</td></tr>
@@ -124,7 +126,7 @@ const newGame=()=>({state:0,hp:3,maxHp:3,menu:0,pause:0,time:0,next:P.spawn,xp:0
 let game=newGame();
 const up=i=>game.up[i];
 // Upgrades: [name, icon, color, max level, badge kind (1 +20%/lv, 2 Lv n, 3 +2n), requires index]. 0 hp 1 warp 2 double 3 triple 4 lowgrav 5 magnet 6 second wind 7 sticky 8 reach 9 jump 10 thick 11 flat 12 fast
-const POOL=[['+1 HP','♥','#ff4d6d',99],['Warp','↻','#5a5cff',1],['x2 Rainbow','◠◠','#c45cff',1],['x3 Rainbow','◠◠◠','#ff9a2e',1,0,2],['Low Grav','½g','#9fd8ff',1],['XP Magnet','⤴','#ffe94a',3,2],['Second Wind','♡','#ff9ac9',1],['More rainbows','+◠','#ffb347',3,3],['Longer Rainbow','⟷','#3fb8ff',5,1],['Higher Jump','⤒','#5ee66a',5,1],['Thicker Rainbow','≡','#ff3b5c',4,2],['Flatter Rainbow','(','#5ee6d0',5,2],['Quick Cast','⚡','#ffd34d',5,2],['Damage','✦','#fff7a0',2,4],['Cast Rate','↯','#9fd8ff',3,2],['Wider Aim','∠','#5ee6d0',3,5]];
+const POOL=[['+1 HP','♥','#ff4d6d',99],['Warp','↻','#5a5cff',1],['x2 Rainbow','◠◠','#c45cff',1],['x3 Rainbow','<small>◠◠◠</small>','#ff9a2e',1,0,2],['Low Grav','½g','#9fd8ff',1],['XP Magnet','⤴','#ffe94a',3,2],['Second Wind','♡','#ff9ac9',1],['More rainbows','+◠','#ffb347',3,3],['Longer Rainbow','⟷','#3fb8ff',5,1],['Higher Jump','⤒','#5ee66a',5,1],['Thicker Rainbow','≡','#ff3b5c',4,2],['Flatter Rainbow','(','#5ee6d0',5,2],['Quick Cast','⚡','#ffd34d',5,2],['Damage','✦','#fff7a0',2,4],['Cast Rate','↯','#9fd8ff',3,2],['Wider Aim','∠','#5ee6d0',3,5]];
 const badge=(t,l)=>t==1?'+'+l*20+'%':t==2?'Lv '+l:t==4?'x'+(l+1):t==5?[90,120,180][l-1]+'°':'+'+l*2;
 // reach shrinks with x2/x3 so the chained arcs don't cover too much
 const jumpVel=()=>P.jump*sqrt(1+up(9)*.2),reach=()=>P.len*(1+up(8)*.2)*(up(3)?.6:up(2)?.75:1),gravity=()=>P.grav*(up(4)?.5:1),bulge=()=>max(.1,P.bulge-up(11)*.04),growTime=()=>max(.08,P.grow-up(12)*.08),bandW=()=>2.6*(1+up(10)*.35),maxR=()=>P.maxR+up(7)*2;
@@ -201,7 +203,7 @@ function updSpawner(dt){const g=game;if(g.state)return;g.time+=dt;g.next-=dt;con
     if(!L.hit&&L.t>=.7){L.hit=1;S.thunder();flash=max(flash,.25);flashC='200,220,255';shake=max(shake,6);const p=player;if(p.dead<=0&&p.inv<=0&&abs(p.x-L.x)<26&&p.y>L.y0)hurt(sign(p.x-L.x)||1)}
     if(L.t>=1)bolts.splice(i,1)}
   if(g.comboT>0){g.comboT-=dt;if(g.comboT<=0)g.combo=0}}
-function updBaddies(dt){const p=player;for(const b of baddies){if(!b.alive){b.die=max(0,b.die-dt);continue}
+function updBaddies(dt){const p=player,solids=clouds.concat(rbs.filter(r=>r.pad&&r.st<2).map(r=>r.pad));for(const b of baddies){if(!b.alive){b.die=max(0,b.die-dt);continue}
   b.bcd=max(0,b.bcd-dt);b.stun=max(0,b.stun-dt);b.hcd=max(0,b.hcd-dt);b.flash=max(0,b.flash-dt);b.born=min(1,b.born+dt*3);b.bob+=dt;
   const c=T[b.type],awake=b.stun<=0&&!game.state&&p.dead<=0,dx=p.x-b.x,dy=p.y-22-b.y,d=hypot(dx,dy)||1;
   if(c.chase&&b.stun<=0){if(awake&&d<c.chase){b.vx=appr(b.vx,dx/d*b.sp,150*dt);b.vy=appr(b.vy,dy/d*b.sp,150*dt)}else{b.vx=appr(b.vx,0,60*dt);b.vy=appr(b.vy,sin(b.bob)*25,60*dt)}}
@@ -215,7 +217,7 @@ function updBaddies(dt){const p=player;for(const b of baddies){if(!b.alive){b.di
     const ex=tx-b.x,ey=ty-b.y,e=hypot(ex,ey)||1,s=min(sp,e*2);b.vx=appr(b.vx,ex/e*s,300*dt);b.vy=appr(b.vy,ey/e*s,300*dt)}
   b.x+=b.vx*dt;b.y+=b.vy*dt;
   const[x0,y0,x1,y1]=b.box;if(b.x<x0){b.x=x0;reflect(b,1,0)}else if(b.x>x1){b.x=x1;reflect(b,-1,0)}if(b.y<y0){b.y=y0;reflect(b,0,1)}else if(b.y>y1){b.y=y1;reflect(b,0,-1)}
-  if(!c.phase)for(const k of clouds){const px=clamp(b.x,k.x,k.x+k.w),py=clamp(b.y,k.y,k.y+k.h),dx=b.x-px,dy=b.y-py,d=hypot(dx,dy);if(d>=b.r)continue;
+  if(!c.phase)for(const k of solids){const px=clamp(b.x,k.x,k.x+k.w),py=clamp(b.y,k.y,k.y+k.h),dx=b.x-px,dy=b.y-py,d=hypot(dx,dy);if(d>=b.r)continue;
     let nx=0,ny=-1;if(d>1e-6){nx=dx/d;ny=dy/d}b.x=px+nx*b.r;b.y=py+ny*b.r;reflect(b,nx,ny);bounceFx(b)}
   for(const a of rbs){if(a.st==2)continue;const Tk=a.band*7,dx=b.x-a.cx,dy=b.y-a.cy,d=hypot(dx,dy)||1e-6;if(d+b.r<a.r-Tk||d-b.r>a.r||!onArc(a,atan2(dy,dx)))continue;
     const out=d>=a.r-Tk/2,sg=out?1:-1,nx=dx/d*sg,ny=dy/d*sg;
@@ -337,12 +339,13 @@ function render(){X.setTransform(DPR,0,0,DPR,0,0);const sky=X.createLinearGradie
 // HUD + main loop
 const hpEl=$('hp'),xfEl=$('xf'),xtEl=$('xt'),upsEl=$('ups'),inEl=$('in');let hudKey;
 on($('ib'),'click',()=>{inEl.classList.toggle('show');unlock()});
+const mbEl=$('mb'),toggleMute=()=>{muted=!muted;mbEl.style.opacity=muted?.4:1};on(mbEl,'click',toggleMute);
 function hud(){const g=game,k=[g.hp,g.maxHp,g.xp,g.need,g.swUsed,...g.up].join();
   if(k!=hudKey){hudKey=k;hpEl.innerHTML='♥'.repeat(g.hp)+'<s>'+'♥'.repeat(g.maxHp-g.hp)+'</s>';xfEl.style.width=g.xp/g.need*100+'%';xtEl.textContent=`XP ${g.xp} / ${g.need}`;
     upsEl.innerHTML=POOL.map((u,i)=>i&&g.up[i]&&!(i==6&&g.swUsed)?`<div class=u style="--c:${u[2]}">${u[1]}${u[4]?`<b>${badge(u[4],g.up[i])}</b>`:''}</div>`:'').join('')}}
 let last=performance.now(),acc=0;const STEP=1/120;
 function frame(now){const dt=min(.1,(now-last)/1000);last=now;time+=dt;pollPad();
-  if(pressed.has('m'))muted=!muted;if(pressed.has('i'))inEl.classList.toggle('show');
+  if(pressed.has('m'))toggleMute();if(pressed.has('i'))inEl.classList.toggle('show');
   if(game.state)game.state+=dt;if(pressed.has('R'))reset();else if(pressed.has('p')||pressed.has('S'))togglePause();
   if(!game.pause){if(mouse.fire){inputMode=1;fire()}else if(pressed.has('f'))fire()}mouse.fire=0;
   if(!game.menu&&!game.pause){acc+=dt;while(acc>=STEP){updPlayer(STEP);updSpawner(STEP);updBaddies(STEP);updPups(STEP);updRbs(STEP);updParts(STEP);updCam(STEP);acc-=STEP;if(game.menu)break}}
