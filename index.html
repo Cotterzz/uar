@@ -132,11 +132,11 @@ const badge=(t,l)=>t==1?'+'+l*20+'%':t==2?'Lv '+l:t==4?'x'+(l+1):t==5?[90,120,18
 const jumpVel=()=>P.jump*sqrt(1+up(9)*.2),reach=()=>P.len*(1+up(8)*.2)*(up(3)?.6:up(2)?.75:1),gravity=()=>P.grav*(up(4)?.5:1),bulge=()=>max(.1,P.bulge-up(11)*.04),growTime=()=>max(.08,P.grow-up(12)*.08),bandW=()=>2.6*(1+up(10)*.35),maxR=()=>P.maxR+up(7)*2;
 // Baddie types: e emoji, r radius, f font px, s speed range, c colour, at unlock time, w roll weight; behaviours drift/chase(radius)/dash/phase/split/boss/eats/storm
 const T=[
-  {e:'😈',r:15,f:30,s:128,hp:1,xp:1,c:'#c45cff',drift:1,at:0,w:3},
+  {e:'😈',r:15,f:30,s:128,hp:1,xp:1,c:'#4cff88',drift:1,at:0,w:3},
   {e:'👿',r:15,f:30,s:70,hp:1,xp:1,c:'#ff4d6d',chase:900,at:60,w:2},
   {e:'👽',r:18,f:34,s:48,hp:2,xp:2,c:'#5ee66a',chase:1500,at:120,w:1.5},
   {e:'👾',r:17,f:32,s:93,hp:1,xp:0,c:'#b06cff',drift:1,at:150,w:1.5,split:1},
-  {e:'😈',r:9,f:18,s:200,hp:1,xp:1,c:'#c45cff',drift:1},
+  {e:'😈',r:9,f:18,s:200,hp:1,xp:1,c:'#4cff88',drift:1},
   {e:'🦇',r:14,f:30,s:120,hp:1,xp:2,c:'#ffb347',dash:1,at:180,w:1.5},
   {e:'👻',r:15,f:30,s:68,hp:1,xp:2,c:'#e0f0ff',chase:1400,at:240,w:1,phase:1},
   {e:'👹',r:26,f:50,s:38,hp:4,xp:4,c:'#ff6b3b',chase:2000,at:300,w:.7},
@@ -189,8 +189,8 @@ function spawnPt(near){for(let i=0;i<30;i++){const x=near?clamp(player.x+(random
   return{x:clamp(player.x+500,100,W.w-100),y:player.y-300}}
 function startSpawn(type,near){const s=spawnPt(near);s.type=type;s.t=0;s.elite=game.time>=180&&random()<.1;spawns.push(s);if(abs(s.x-player.x)<1200)S.spawn()}
 function spawnB(type,x,y,quiet,o={}){const c=T[type];let sp=c.s*(.85+random()*.3),hp=c.hp;const a=random()*TAU;
-  if(o.elite){sp*=1.5;hp*=2}if(o.hs)hp=round(hp*o.hs);const bw=c.drift?type==4?220:160:0;
-  const b={type,x,y,vx:cos(a)*sp,vy:sin(a)*sp,sp,r:c.r,box:c.drift?[clamp(x-bw,20,W.w-20),clamp(y-bw*.7,W.top,W.bot),clamp(x+bw,20,W.w-20),clamp(y+bw*.7,W.top,W.bot)]:[20,W.top,W.w-20,W.bot],hp,maxHp:hp,elite:o.elite,alive:1,die:0,bob:random()*10,bcd:0,stun:0,hcd:0,flash:0,born:0,mode:0,timer:c.storm?8:1.5+random(),boltT:2};
+  if(o.elite){sp*=1.5;hp*=2}if(o.hs)hp=round(hp*o.hs);
+  const b={type,x,y,vx:cos(a)*sp,vy:sin(a)*sp,sp,r:c.r,hp,maxHp:hp,elite:o.elite,alive:1,die:0,bob:random()*10,bcd:0,stun:0,hcd:0,flash:0,born:0,mode:0,timer:c.storm?8:1.5+random(),boltT:2};
   baddies.push(b);if(c.boss)game.boss=b;if(!quiet)S.appear();burst(x,y,c.boss?50:16,{sp:c.boss?260:140,life:.5,size:3,col:o.elite?'#ffd34d':c.c});return b}
 function rollType(t){const pool=T.filter(c=>c.w&&t>=c.at);let s=0;for(const c of pool)s+=c.w;let r=random()*s;for(const c of pool){r-=c.w;if(r<=0)return T.indexOf(c)}return 0}
 function updSpawner(dt){const g=game;if(g.state)return;g.time+=dt;g.next-=dt;const t=g.time;
@@ -216,7 +216,7 @@ function updBaddies(dt){const p=player,solids=clouds.concat(rbs.filter(r=>r.pad&
     else{tx=p.x+sin(b.bob*.6)*140;ty=max(W.top+90,p.y-360);sp=b.sp;if(awake){b.boltT-=dt;if(b.boltT<=0){b.boltT=2.4;bolts.push({x:clamp(p.x+p.vx*.45,20,W.w-20),y0:b.y+b.r,t:0});S.warn()}}if(b.timer<=0){b.mode=2;b.timer=3.2}}
     const ex=tx-b.x,ey=ty-b.y,e=hypot(ex,ey)||1,s=min(sp,e*2);b.vx=appr(b.vx,ex/e*s,300*dt);b.vy=appr(b.vy,ey/e*s,300*dt)}
   b.x+=b.vx*dt;b.y+=b.vy*dt;
-  const[x0,y0,x1,y1]=b.box;if(b.x<x0){b.x=x0;reflect(b,1,0)}else if(b.x>x1){b.x=x1;reflect(b,-1,0)}if(b.y<y0){b.y=y0;reflect(b,0,1)}else if(b.y>y1){b.y=y1;reflect(b,0,-1)}
+  if(b.x<20){b.x=20;reflect(b,1,0)}else if(b.x>W.w-20){b.x=W.w-20;reflect(b,-1,0)}if(b.y<W.top){b.y=W.top;reflect(b,0,1)}else if(b.y>W.bot){b.y=W.bot;reflect(b,0,-1)}
   if(!c.phase)for(const k of solids){const px=clamp(b.x,k.x,k.x+k.w),py=clamp(b.y,k.y,k.y+k.h),dx=b.x-px,dy=b.y-py,d=hypot(dx,dy);if(d>=b.r)continue;
     let nx=0,ny=-1;if(d>1e-6){nx=dx/d;ny=dy/d}b.x=px+nx*b.r;b.y=py+ny*b.r;reflect(b,nx,ny);bounceFx(b)}
   for(const a of rbs){if(a.st==2)continue;const Tk=a.band*7,dx=b.x-a.cx,dy=b.y-a.cy,d=hypot(dx,dy)||1e-6;if(d+b.r<a.r-Tk||d-b.r>a.r||!onArc(a,atan2(dy,dx)))continue;
@@ -233,7 +233,7 @@ function updBaddies(dt){const p=player,solids=clouds.concat(rbs.filter(r=>r.pad&
 function updPups(dt){const p=player,g=game;for(let i=pups.length-1;i>=0;i--){const u=pups[i];u.t+=dt;const mx=p.x-u.x,my=p.y-22-u.y,md=hypot(mx,my);
   if(md<80+up(5)*90&&p.dead<=0){const s=260*dt;u.x+=mx/md*s;u.y+=my/md*s}else{u.y-=42*dt;u.x+=sin(u.t*2)*30*dt}
   if(random()<dt*12)burst(u.x,u.y+8,1,{sp:20,life:.6,size:2,cols:RC,vy:30});
-  if(u.y<cam.y-24||u.y<W.top){pups.splice(i,1);continue}
+  if(u.y<W.top){pups.splice(i,1);continue}
   if(g.state||p.dead>0)continue;const qx=clamp(u.x,p.x-18,p.x+18),qy=clamp(u.y,p.y-44,p.y);if(hypot(u.x-qx,u.y-qy)>=u.r)continue;
   pups.splice(i,1);
   if(u.heart){g.hp=min(g.maxHp,g.hp+1);S.levelup();burst(u.x,u.y,20,{sp:160,life:.6,size:3.5,col:'#ff4d6d'});continue}
