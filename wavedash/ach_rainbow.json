@@ -1,0 +1,95 @@
+{
+  "achievements": [
+    {
+      "identifier": "FALL",
+      "display_name": "Fall to your death",
+      "description": "Die by falling",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "FALLW",
+      "display_name": "Fall Warp",
+      "description": "Use the fall warp",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "SIXT",
+      "display_name": "Exp x6",
+      "description": "Get x6 experience with combos",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "FCOMBO",
+      "display_name": "First combo",
+      "description": "Get 2x exp or higher with a hit combo",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "MAXA",
+      "display_name": "Sentinel",
+      "description": "Max out fire angle for 360 degree rainbows",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "FAST",
+      "display_name": "Minigun",
+      "description": "Max out cast rate and cast speed",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "FLY",
+      "display_name": "Pegasus",
+      "description": "Max out jump height and get low gravity",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "RMAX",
+      "display_name": "Rainmaker",
+      "description": "Max out more rainbows and get triple bow",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "PHAT",
+      "display_name": "Size matters",
+      "description": "Max out thickness and length",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "EXP",
+      "display_name": "Experience matters",
+      "description": "Max out the magnet and get to level 40",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "AIM",
+      "display_name": "Assassin",
+      "description": "Max out fire angle, damage and straighter rainbows",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "REAT",
+      "display_name": "Dragonslayer",
+      "description": "Kill the Rainbow Eater boss",
+      "secret": false,
+      "stat_requirement": null
+    },
+    {
+      "identifier": "CLOUD",
+      "display_name": "Sunshine",
+      "description": "Kill the Cloud boss",
+      "secret": false,
+      "stat_requirement": null
+    }
+  ]
+}

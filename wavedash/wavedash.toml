@@ -1,0 +1,5 @@
+# Wavedash platform configuration
+# Set game_id to the ID assigned when you create the game on wavedash.com,
+# then test locally with `wavedash dev` and publish with `wavedash build push`.
+game_id = "j9702csfznxrh4kws7fvhq63018b8n7k"
+upload_dir = "."
